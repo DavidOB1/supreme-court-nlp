@@ -30,5 +30,11 @@ def vectorize_string(s, model):
     s = remove_punc(s)
     # Vectorizes each word, excluding punctuation
     for word in word_tokenize(s):
-        word_vectors.append(model.wv[word.lower()])
+        try:
+            vector = model.wv[word.lower()]
+            word_vectors.append(vector)
+        except KeyError:
+            print(word + " not found!")
+            print("it was in: " + s + "\n")
+        
     return word_vectors

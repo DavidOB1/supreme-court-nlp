@@ -47,7 +47,7 @@ def get_facts_list():
     facts = data[data.columns[8]].to_list()
     for i in range(len(facts)):
         facts[i].replace("<p>", "")
-        facts[i].replace("</p>, "")
+        facts[i].replace("</p>", "")
         facts[i].replace("â€™", "'")
     return facts
                          
