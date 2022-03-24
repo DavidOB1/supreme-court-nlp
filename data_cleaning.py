@@ -5,12 +5,14 @@ import csv
 data = pd.read_csv("justice.csv")
 skip_nums = []
 
+# Calculates the average of a list
 def avg(lst):
     try:
         return sum(lst) / len(lst)
     except:
         return 0
 
+# Gets the list of justice ideologies at row n of data
 def get_ideologies(n):
     try:
         links = data[data.columns[3]].to_list()
@@ -25,12 +27,14 @@ def get_ideologies(n):
         skip_nums.append(n)
         return []
 
+# Gets a list containing the lists of justice ideologies
 def get_ideologies_list():
     output = []
     for i in range(3303):
         output.append(get_ideologies(i))
     return output
 
+# Gets the list of issue areas, with 'Unknown' being blank issue areas
 def get_issue_area_list():
     issue_areas = data[data.columns[15]].to_list()
     for i in range(len(issue_areas)):
@@ -38,13 +42,16 @@ def get_issue_area_list():
             issue_areas[i] = "Unknown"
     return issue_areas
 
+# Gets the list of facts, with certain glitches and HTML elements removed
 def get_facts_list():
     facts = data[data.columns[8]].to_list()
     for i in range(len(facts)):
-        facts[i] = facts[i][3:-5]
+        facts[i].replace("<p>", "")
+        facts[i].replace("</p>, "")
         facts[i].replace("â€™", "'")
     return facts
-
+                         
+# Creates a cleaned csv file with all the data we want
 def main():
     ideologies = get_ideologies_list()
     avg_ideologies = [avg(x) for x in ideologies]
