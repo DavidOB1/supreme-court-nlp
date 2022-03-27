@@ -2,15 +2,13 @@ import requests
 import pandas as pd
 import csv
 
-data = pd.read_csv("justice.csv")
-skip_nums = []
-
 # Calculates the average of a list
 def avg(lst):
-    try:
-        return sum(lst) / len(lst)
-    except:
-        return 0
+    lst_len = len(lst)
+    if lst_len != 0:
+        return sum(lst) / lst_len
+    else:
+        return lst_len
 
 # Gets the list of justice ideologies at row n of data
 def get_ideologies(n):
@@ -24,6 +22,7 @@ def get_ideologies(n):
             ideologies.append(justiceList[i]["ideology"])
         return ideologies
     except:
+        print(f"Error retrieving ideologies, skipping line {n}.")
         skip_nums.append(n)
         return []
 
@@ -34,39 +33,54 @@ def get_ideologies_list():
         output.append(get_ideologies(i))
     return output
 
-# Gets the list of issue areas, with 'Unknown' being blank issue areas
-def get_issue_area_list():
-    issue_areas = data[data.columns[15]].to_list()
-    for i in range(len(issue_areas)):
-        if type(issue_areas[i]) != str:
-            issue_areas[i] = "Unknown"
-    return issue_areas
+# Change issue areas with no data type to "unknown"
+def clean_issue_area(issue):
+    if type(issue) != str:
+        return "Unknown"
+    else:
+        return issue
 
-# Gets the list of facts, with certain glitches and HTML elements removed
-def get_facts_list():
-    facts = data[data.columns[8]].to_list()
-    for i in range(len(facts)):
-        facts[i].replace("<p>", "")
-        facts[i].replace("</p>", "")
-        facts[i].replace("â€™", "'")
-    return facts
-                         
+# Cleans the given fact (still keeps <a> elements as there isn't an easy way to remove those)
+# Keeps â€™ in the text rather than replacing it with '
+def clean_fact(fact):
+    fact = fact.replace("<p>", "").replace("</p>", "")[:-1]
+    fact = fact.replace("<em>", "").replace("</em>", "").replace("<i>", "").replace("</i>", "")
+    return fact.replace('<p dir="ltr">', "").replace('<p class="p1">', "")
+
+# Adds rows to the skip list that have no value for which side wins, and also returns the list of boolean data
+def clean_first_party_wins():
+    bool_list = data["first_party_winner"].to_list()
+    for i in range(len(bool_list)):
+        if type(bool_list[i]) != bool:
+            skip_nums.append(i)
+            print(f"Skipping row {i} as we don't have data on which side won.")
+    return bool_list
+                       
 # Creates a cleaned csv file with all the data we want
 def main():
+
+    # Creates lists for all the data and adds indecies to the skip_nums list that need to be skipped
     ideologies = get_ideologies_list()
     avg_ideologies = [avg(x) for x in ideologies]
-    issue_areas = get_issue_area_list()
-    facts = get_facts_list()
-    first_wins = data[data.columns[12]].to_list()
-    first_parties = data[data.columns[6]].to_list()
-    second_parties = data[data.columns[7]].to_list()
-    case_names = data[data.columns[2]].to_list()
-    docket_nums = data[data.columns[4]].to_list()
+    issue_areas = [clean_issue_area(x) for x in data["issue_area"].to_list()]
+    facts = [clean_fact(x) for x in data["facts"].to_list()]
+    first_wins = clean_first_party_wins()
+    first_parties = data["first_party"].to_list()
+    second_parties = data["second_party"].to_list()
+    case_names = data["name"].to_list()
+    docket_nums = data["docket"].to_list()
 
-    with open('clean_data.csv', 'w', newline='') as csvfile:
-        fieldnames = ['case_name', 'docket_num', 'first_party', 'second_party', 'facts', 
+    # Skipping lines where the ideology data is innacurate
+    for i in range(len(avg_ideologies)):
+        if (not i in skip_nums) and (avg_ideologies[i] == 0):
+            skip_nums.append(i)
+            print(f"Skipping line {i} due to not being able to get accurate ideologies")
+
+    # Writes the data to a new csv file called "clean_data.csv"
+    with open("clean_data.csv", "w", newline="") as csvfile:
+        fields = ['case_name', 'docket_num', 'first_party', 'second_party', 'facts', 
         'first_party_won', 'issue_area', 'ideologies', 'avg_ideology']
-        writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
+        writer = csv.DictWriter(csvfile, fieldnames = fields)
         writer.writeheader()
         for i in range(3303):
             if not i in skip_nums:
@@ -77,15 +91,17 @@ def main():
                     'avg_ideology': avg_ideologies[i]})
                 except:
                     print(f"Error on line {i}, skipping assignment.")
+                    skip_nums.append(i)
 
-    print("Done")
+    print(f"Finished the data cleaning. A total of {len(skip_nums)} lines were skipped, making the total number of cases: {3303 - len(skip_nums)}.")
+
 
 if __name__ == "__main__":
-    main()
+    # Reads the data
+    data = pd.read_csv("justice.csv")
 
-# A few notes:
-# - About 20 or so lines were skipped due to encountering errors either retrieving
-#   their ideology data or in adding them to the csv file
-# - Around 200 or so lines were deleted because their ideology data was wrong (all 0s)
-#   and this would likely cause issues later on
-# - Final number of cases in dataset: 3081
+    # Creates a list for rows to be skipped in the new clean data
+    skip_nums = []
+
+    # Runs the main program
+    main()
