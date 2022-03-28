@@ -1,6 +1,6 @@
 import string
 from nltk.tokenize import sent_tokenize, word_tokenize
-from gensim.models import Word2Vec
+from gensim.models import Word2Vec, FastText
 import pandas as pd
 
 # removes punctuation from a string
@@ -27,14 +27,16 @@ def create_vectorization_model(texts):
 # vectorizes a single string using a given model
 def vectorize_string(s, model):
     word_vectors = []
-    s = remove_punc(s)
+    #s = remove_punc(s)
     # Vectorizes each word, excluding punctuation
-    for word in word_tokenize(s):
-        try:
-            vector = model.wv[word.lower()]
-            word_vectors.append(vector)
-        except KeyError:
-            print(word + " not found!")
-            print("it was in: " + s + "\n")
+    for sent in sent_tokenize(s):
+        list_of_words = word_tokenize(remove_punc(sent.lower()))
+        for word in list_of_words:
+            try:
+                vector = model.wv[word.lower()]
+                word_vectors.append(vector)
+            except KeyError:
+                print(word + " not found!")
+                print("it was in: " + s + "\n")
         
     return word_vectors
