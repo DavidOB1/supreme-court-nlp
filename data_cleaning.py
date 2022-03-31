@@ -77,7 +77,7 @@ def main():
             print(f"Skipping line {i} due to not being able to get accurate ideologies")
 
     # Writes the data to a new csv file called "clean_data.csv"
-    with open("clean_data.csv", "w", newline="") as csvfile:
+    with open("clean_data.csv", "w", newline="", encoding="utf-8") as csvfile:
         fields = ['case_name', 'docket_num', 'first_party', 'second_party', 'facts', 
         'first_party_won', 'issue_area', 'ideologies', 'avg_ideology']
         writer = csv.DictWriter(csvfile, fieldnames = fields)
