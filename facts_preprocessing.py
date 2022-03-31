@@ -33,10 +33,11 @@ def vectorize_string(s, model):
         list_of_words = word_tokenize(remove_punc(sent.lower()))
         for word in list_of_words:
             try:
-                vector = model.wv[word.lower()]
+                vector = model.wv.key_to_index[word.lower()]
                 word_vectors.append(vector)
             except KeyError:
-                print(word + " not found!")
-                print("it was in: " + s + "\n")
+                pass
+                #print(word + " not found!")
+                #print("it was in: " + s + "\n")
         
     return word_vectors
