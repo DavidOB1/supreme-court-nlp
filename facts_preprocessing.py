@@ -1,7 +1,9 @@
 import string
+from nltk.corpus import brown
 from nltk.tokenize import sent_tokenize, word_tokenize
 from gensim.models import Word2Vec, FastText
 import pandas as pd
+
 
 # removes punctuation from a string
 def remove_punc(s):
@@ -12,7 +14,7 @@ def remove_punc(s):
 # expects a list of strings, returns a vectorization model
 def create_vectorization_model(texts):
     raw_text = ' '.join(texts)
-    formatted_text = []
+    formatted_text = brown.sents()
 
     # Iterates through all sentences in raw text
     for sent in sent_tokenize(raw_text):
@@ -21,13 +23,14 @@ def create_vectorization_model(texts):
     model = Word2Vec(formatted_text, min_count=1, window=5)
     return model
 
+
 # Model created, run following on each facts section
 # Loop through each case in cases, which represents all cases
 
 # vectorizes a single string using a given model
 def vectorize_string(s, model):
     word_vectors = []
-    #s = remove_punc(s)
+    # s = remove_punc(s)
     # Vectorizes each word, excluding punctuation
     for sent in sent_tokenize(s):
         list_of_words = word_tokenize(remove_punc(sent.lower()))
@@ -36,8 +39,15 @@ def vectorize_string(s, model):
                 vector = model.wv.key_to_index[word.lower()]
                 word_vectors.append(vector)
             except KeyError:
+<<<<<<< HEAD
                 pass
                 #print(word + " not found!")
                 #print("it was in: " + s + "\n")
         
     return word_vectors
+=======
+                print(word + " not found!")
+                print("it was in: " + s + "\n")
+
+    return word_vectors
+>>>>>>> 7e8ada80d9cff78bd9fa23e8e38f7c6d4ba1006a
