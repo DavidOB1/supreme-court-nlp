@@ -73,15 +73,20 @@ def build_model():
     embeddings_initializer=keras.initializers.Constant(embedding_matrix),
     trainable=False,
   )(text_input)
-  conv_layer_1 = layers.Conv1D(256,3,padding="same",activation="relu")(embedding)
+
+  conv_layer_1 = layers.Conv1D(512,6,padding="same",activation="relu")(embedding)
   pool_1 = layers.MaxPool1D()(conv_layer_1)
-  conv_layer_2 = layers.Conv1D(256,3,padding="same",activation="relu")(pool_1)
+  norm_1 = layers.BatchNormalization()(pool_1)
+  conv_layer_2 = layers.Conv1D(256,4,padding="same",activation="relu")(norm_1)
   pool_2 = layers.MaxPool1D(pool_size=2)(conv_layer_2)
-  conv_layer_3 = layers.Conv1D(256,3,padding="same",activation="relu")(pool_2)
+  norm_2 = layers.BatchNormalization()(pool_2)
+  conv_layer_3 = layers.Conv1D(256,2,padding="same",activation="relu")(norm_2)
   text_pool = layers.GlobalMaxPool1D()(conv_layer_3)
 
   ideology_input = layers.Input(shape=(9))
-  i_pool = layers.Dense(100)(ideology_input) 
+  i_1 = layers.Dense(100,activation="relu")(ideology_input) 
+  i_2 = layers.Dense(50,activation="relu")(i_1)
+  i_3 = layers.Dense(20,activation="relu")(i_2)  
 
   
   first_party_input = layers.Input(shape=(20,100))
@@ -93,18 +98,21 @@ def build_model():
   s_pool = layers.GlobalAvgPool1D()(s_conv)
 
   #combined = layers.concatenate([text_pool,fp_pool,s_pool,i_pool])
-  combined = layers.concatenate([text_pool,i_pool])
+  combined = layers.concatenate([text_pool,i_3])
 
   dense_1 = layers.Dense(64,activation="relu")(combined)
   dense_2 = layers.Dense(16,activation="relu")(dense_1)
-  dense_3 = layers.Dense(8,activation="relu")(dense_2)
+  norm_d = layers.BatchNormalization()(dense_2)
+  dense_3 = layers.Dense(8,activation="relu")(norm_d)
   output = layers.Dense(1,activation="sigmoid")(dense_3)
 
   #return keras.Model(inputs=(text_input,first_party_input,second_party_input,ideology_input),outputs=output)
+  #tf.metrics.BinaryAccuracy(threshold=0.0)
   mod = keras.Model(inputs=(text_input, ideology_input),outputs=output)
   mod.compile(loss=tf.losses.BinaryCrossentropy(),
-              optimizer='adam',
-              metrics=tf.metrics.BinaryAccuracy(threshold=0.0))
+              optimizer=tf.keras.optimizers.Adam(learning_rate = 0.1),
+              metrics=["accuracy"])
+  mod.summary()
   return mod
 
 def train_model():

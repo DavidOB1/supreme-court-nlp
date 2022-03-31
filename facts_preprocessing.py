@@ -14,7 +14,7 @@ def remove_punc(s):
 # expects a list of strings, returns a vectorization model
 def create_vectorization_model(texts):
     raw_text = ' '.join(texts)
-    formatted_text = brown.sents()
+    formatted_text = [] #list(brown.sents())
 
     # Iterates through all sentences in raw text
     for sent in sent_tokenize(raw_text):
@@ -39,15 +39,8 @@ def vectorize_string(s, model):
                 vector = model.wv.key_to_index[word.lower()]
                 word_vectors.append(vector)
             except KeyError:
-<<<<<<< HEAD
                 pass
                 #print(word + " not found!")
                 #print("it was in: " + s + "\n")
         
     return word_vectors
-=======
-                print(word + " not found!")
-                print("it was in: " + s + "\n")
-
-    return word_vectors
->>>>>>> 7e8ada80d9cff78bd9fa23e8e38f7c6d4ba1006a
