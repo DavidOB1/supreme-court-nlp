@@ -13,7 +13,7 @@ def avg(lst):
 # Gets the list of justice ideologies at row n of data
 def get_ideologies(n):
     try:
-        links = data[data.columns[3]].to_list()
+        links = data["href"].to_list()
         ideologies = []
         fullDict = requests.get(links[n]).json()
         decisionsDict = fullDict["decisions"][0]
@@ -69,6 +69,7 @@ def main():
     second_parties = data["second_party"].to_list()
     case_names = data["name"].to_list()
     docket_nums = data["docket"].to_list()
+    years = data["term"].to_list()
 
     # Skipping lines where the ideology data is innacurate
     for i in range(len(avg_ideologies)):
@@ -77,9 +78,9 @@ def main():
             print(f"Skipping line {i} due to not being able to get accurate ideologies")
 
     # Writes the data to a new csv file called "clean_data.csv"
-    with open("clean_data.csv", "w", newline="", encoding="utf-8") as csvfile:
+    with open("clean_data.csv", "w", newline = "", encoding = "Windows-1252") as csvfile:
         fields = ['case_name', 'docket_num', 'first_party', 'second_party', 'facts', 
-        'first_party_won', 'issue_area', 'ideologies', 'avg_ideology']
+        'first_party_won', 'issue_area', 'ideologies', 'avg_ideology', 'year']
         writer = csv.DictWriter(csvfile, fieldnames = fields)
         writer.writeheader()
         for i in range(3303):
@@ -88,7 +89,7 @@ def main():
                     writer.writerow({'case_name': case_names[i], 'docket_num': docket_nums[i],
                     'first_party': first_parties[i], 'second_party': second_parties[i], 'facts': facts[i],
                     'first_party_won': first_wins[i], 'issue_area': issue_areas[i], 'ideologies': ideologies[i],
-                    'avg_ideology': avg_ideologies[i]})
+                    'avg_ideology': avg_ideologies[i], 'year': years[i]})
                 except:
                     print(f"Error on line {i}, skipping assignment.")
                     skip_nums.append(i)
