@@ -1,8 +1,7 @@
 import string
-from nltk.corpus import brown
 from nltk.tokenize import sent_tokenize, word_tokenize
-from gensim.models import Word2Vec, FastText
-import pandas as pd
+from nltk.stem import WordNetLemmatizer
+from gensim.models import Word2Vec
 
 
 # removes punctuation from a string
@@ -10,15 +9,22 @@ def remove_punc(s):
     return "".join(x for x in s if x not in string.punctuation)
 
 
+# Lemmatizes all the strings in the given list
+def lemm(lst):
+    lemmatizer = WordNetLemmatizer()
+    return [lemmatizer.lemmatize(word) for word in lst]
+
+
 # creates a model to vectorize texts
 # expects a list of strings, returns a vectorization model
 def create_vectorization_model(texts):
     raw_text = ' '.join(texts)
-    formatted_text = [] #list(brown.sents())
+    formatted_text = []
 
     # Iterates through all sentences in raw text
     for sent in sent_tokenize(raw_text):
-        formatted_text.append(word_tokenize(remove_punc(sent.lower())))
+        formatted_sent = lemm(word_tokenize(remove_punc(sent.lower())))
+        formatted_text.append(formatted_sent)
 
     model = Word2Vec(formatted_text, min_count=1, window=5)
     return model
